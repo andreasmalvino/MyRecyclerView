@@ -1,20 +1,28 @@
 package com.example.myrecyclerview;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.appcompat.widget.Toolbar;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
+
 import androidx.appcompat.app.ActionBar;
 
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
+    public interface OnItemClickCallback {
+        void onItemClicked(Hero hero);
+    }
     private RecyclerView rvHeroes;
     private ArrayList<Hero> list = new ArrayList<>();
     private int selectedMode = R.id.action_list; // Mode default
+    private String title = "Mode List";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
-            actionBar.setTitle("Mode List");
+            actionBar.setTitle(title);
         }
 
         rvHeroes = findViewById(R.id.rv_heroes);
@@ -38,6 +46,13 @@ public class MainActivity extends AppCompatActivity {
         rvHeroes.setLayoutManager(new LinearLayoutManager(this));
         ListHeroAdapter listHeroAdapter = new ListHeroAdapter(list);
         rvHeroes.setAdapter(listHeroAdapter);
+
+        listHeroAdapter.setOnItemClickCallback(new ListHeroAdapter.OnItemClickCallback() {
+            @Override
+            public void onItemClicked(Hero data) {
+                showSelectedHero(data);
+            }
+        });
     }
 
     @Override
@@ -53,24 +68,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setMode(int selectedMode) {
-        if (this.selectedMode != selectedMode) {
-            this.selectedMode = selectedMode;
-
-            if (selectedMode == R.id.action_list) {
-                // Tindakan yang diambil saat item "List" dipilih
-                showRecyclerList();
-                updateActionBarTitle("Mode List");
-            } else if (selectedMode == R.id.action_grid) {
-                // Tindakan yang diambil saat item "Grid" dipilih
-                // Implementasikan tampilan grid
-                updateActionBarTitle("Mode Grid");
-            } else if (selectedMode == R.id.action_cardview) {
-                // Tindakan yang diambil saat item "CardView" dipilih
-                // Implementasikan tampilan CardView
-                updateActionBarTitle("Mode CardView");
-            }
+        if (selectedMode == R.id.action_list) {
+            title = "Mode List";
+            showRecyclerList();
+        } else if (selectedMode == R.id.action_grid) {
+            title = "Mode Grid";
+            showRecyclerGrid();
+        } else if (selectedMode == R.id.action_cardview) {
+            title = "Mode CardView";
+            showRecyclerCardView();
         }
+        setActionBarTitle(title);
     }
+
 
     private void updateActionBarTitle(String title) {
         ActionBar actionBar = getSupportActionBar();
@@ -78,4 +88,34 @@ public class MainActivity extends AppCompatActivity {
             actionBar.setTitle(title);
         }
     }
+
+    private void showRecyclerGrid(){
+        rvHeroes.setLayoutManager(new GridLayoutManager(this,2));
+        GridHeroAdapter gridHeroAdapter = new GridHeroAdapter(list);
+        rvHeroes.setAdapter(gridHeroAdapter);
+
+        gridHeroAdapter.setOnItemClickCallback(new GridHeroAdapter.OnItemClickCallback() {
+            @Override
+            public void onItemClicked(Hero data) {
+                showSelectedHero(data);
+            }
+        });
+    }
+
+    private void showRecyclerCardView(){
+        rvHeroes.setLayoutManager(new LinearLayoutManager(this));
+        CardViewHeroAdapter cardViewHeroAdapter = new CardViewHeroAdapter(list);
+        rvHeroes.setAdapter(cardViewHeroAdapter);
+    }
+
+    private void setActionBarTitle(String title) {
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(title);
+        }
+    }
+
+    private void showSelectedHero(Hero hero) {
+        Toast.makeText(this, "Kamu memilih " + hero.getName(),Toast.LENGTH_SHORT).show();
+    }
+
 }
